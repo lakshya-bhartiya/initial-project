@@ -1,7 +1,8 @@
 const User = require("./model.user")
 const UserServices = {};
 
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcrypt");
+const { use } = require("./routes.user");
 
 
 
@@ -82,6 +83,21 @@ UserServices.findUserByEmailAndPassword = async (email, password) => {
   }
 
 
+}
+
+
+UserServices.findByEmail  = async(matchField) => {
+  return User.findOne(...matchField)
+}
+
+
+UserServices.findAllUser = async() =>{
+  return User.find({})
+}
+
+
+UserServices.findDeleted = async(id , updateField, )=>{
+  return User.findByIdAndUpdate({_id:id}, {...updateField}, {new: true})
 }
 
 module.exports = UserServices;
