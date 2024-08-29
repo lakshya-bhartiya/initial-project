@@ -2,7 +2,7 @@ const User = require("./model.user")
 const UserServices = {};
 
 const bcrypt = require("bcrypt");
-const { use } = require("./routes.user");
+// const { use } = require("./routes.user");
 
 
 
@@ -21,7 +21,7 @@ UserServices.registerUser = async ({ name, email, password , confirmPassword}) =
     try {
   
       const hash = bcrypt.hashSync(password, 10)
-      console.log(hash)
+      console.log(hash, "hash reg")
       let newUser = await User.create({ name, email, password: hash , confirmPassword})
       return { status: "OK", data: newUser }
   
@@ -31,21 +31,6 @@ UserServices.registerUser = async ({ name, email, password , confirmPassword}) =
     }
   
   }
-
-UserServices.registerUser = async ({ name, email, password}) => {
-  console.log("hhh")
-  try {
-    const hash = bcrypt.hashSync(password, 10)
-    console.log(hash,"hash")
-    let newUser = await User.create({ name, email, password:hash});
-    return { status: "OK", data: newUser };
-  } catch (error) {
-    console.log(error)
-    return { status: "ERR", data: null, error: err };
-  }
-};
-
-
 
 UserServices.getUserByEmail = async (email) => {
   try {
@@ -62,28 +47,44 @@ UserServices.getUserByEmail = async (email) => {
 
 UserServices.findUserByEmailAndPassword = async (email, password) => {
   try {
-    let user = await User.findOne({ email })
-      console.log(user, "user")
+    const user = await User.findOne({ email});
     if (user) {
-      let { password: hash } = user
-      
-      let isMatched = bcrypt.compareSync(password, hash)
-
-      if(isMatched){
-        return user
-      }else{
-        return false
+      const isMatched = bcrypt.compareSync(password, user.password);
+      if (isMatched) {
+        return { status: "OK", data: user };
+      } else {
+        return { status: "ERR", msg: "Invalid password" };
       }
     } else {
-      return false
+      return { status: "ERR", msg: "User not found" };
     }
-
   } catch (err) {
-    return false
+    return { status: "ERR", error: err };
   }
+};
 
 
-}
+UserServices.findUserByPassword = async (password) => {
+  try {
+    const user = await User.findOne({password});
+
+    console.log(user, "user")
+    if (user) {
+      const isMatched = bcrypt.compareSync(password, user.password);
+      if (isMatched) {
+        return { status: "OK", data: user };
+      } else {
+        return { status: "ERR", msg: "Invalid password" };
+      }
+    } else {
+      return { status: "ERR", msg: "User not found" };
+    }
+  } catch (err) {
+    return { status: "ERR", error: err };
+  }
+};
+
+
 
 //find by email
 UserServices.findByEmail  = async(matchField) => {
@@ -102,17 +103,71 @@ UserServices.findDeleted = async(id , updateField, )=>{
 
 
 //update user
-UserServices.updateUser = async (id, {name, email, password}) =>{
+UserServices.updateUser = async (id, {name, email}) =>{
 
   try{
-    const hash = bcrypt.hashSync(password, 10)
-    console.log(hash,"hash")
-    return User.findByIdAndUpdate({_id:id}, {name, email, password:hash})
+    return User.findByIdAndUpdate({_id:id}, {name, email})
   }catch(err){
     console.log(err)
   }
 
 }
+
+// UserServices.updatePassword = async (id, {password}) =>{
+//   try{
+
+//     const hash = bcrypt.hashSync(password, 10)
+//     console.log(hash, "hash")
+//     return User.findByIdAndUpdate({_id:id}, {password : hash})
+//   }catch(err){
+//     console.log(err)
+//     return res.send({status: "err", data: null})
+//   }
+// }
+
+
+UserServices.findUser = async(id)=>{
+  try{
+    const user = await User.findById(id)
+    console.log(user, "user")
+    return user
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
+UserServices.verifyCurrentPasword = async(user, currentPassword) =>{
+
+  console.log(user, "pass")
+  console.log(currentPassword, "curr")
+
+  try{
+    return await bcrypt.compare(currentPassword, user.password);
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
+UserServices.hashPassword = async(password) => {
+  try{
+    return await bcrypt.hash(password, 10)
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
+UserServices.updatePassword = async (id, updatePass) => {
+  try{
+    return await User.findByIdAndUpdate(id,{password:updatePass});
+  }catch(err){
+    console.log(err)
+  }
+}
+
+
 
 
 
