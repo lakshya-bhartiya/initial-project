@@ -123,10 +123,32 @@ userController.deletedUser = async(req, res)=>{
     if(getDeletedUser === null){
       return res.send({status : "err", msg : "data not found", data: null})
     }else{
-      return res.send({status : "ok", msg : "user deleted", error : null})
+      return res.send({status : "ok", msg : "user deleted", error : null, data: getDeletedUser})
     }
   }catch(err){
     return res.send({status : "err", msg : "data not deleted", error : err})
+  }
+}
+
+
+userController.updateUser = async(req, res) => {
+  const {id} = req.params
+
+  const {name, email, password} = req.body
+
+  try{
+    const updateUserById = await UserServices.updateUser(id, {name, email, password})
+
+    if(!name || !email || !password){
+      return res.send({status : "err", msg : "name, email or password is required", error : null, data: updateUserById})
+    }
+
+    if(updateUserById){
+      return res.send({status : "ok", msg : "user updated", error : null, data: updateUserById})
+    }
+  }catch(err){
+    console.log(err)
+    return res.send({status : "err", msg : "user not found", error : err, data: null})
   }
 }
 

@@ -85,19 +85,35 @@ UserServices.findUserByEmailAndPassword = async (email, password) => {
 
 }
 
-
+//find by email
 UserServices.findByEmail  = async(matchField) => {
   return User.findOne(...matchField)
 }
 
-
+//find all user
 UserServices.findAllUser = async() =>{
   return User.find({})
 }
 
-
+//find deleted user
 UserServices.findDeleted = async(id , updateField, )=>{
   return User.findByIdAndUpdate({_id:id}, {...updateField}, {new: true})
 }
+
+
+//update user
+UserServices.updateUser = async (id, {name, email, password}) =>{
+
+  try{
+    const hash = bcrypt.hashSync(password, 10)
+    console.log(hash,"hash")
+    return User.findByIdAndUpdate({_id:id}, {name, email, password:hash})
+  }catch(err){
+    console.log(err)
+  }
+
+}
+
+
 
 module.exports = UserServices;
